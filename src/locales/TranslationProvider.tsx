@@ -24,6 +24,11 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
   const [translations, setTranslations] = useState<Translations>({ en })
 
   async function changeLocale(newLocale: AvailableLocales) {
+    if (Object.hasOwn(translations, newLocale)) {
+      setLocale(newLocale)
+      return
+    }
+
     fetch(`./locales/${newLocale}.json`)
       .then(response => response.json())
       .then(json => {
