@@ -20,31 +20,27 @@ const initialState: TranslationContextType = {
 export const TranslationContext = createContext<TranslationContextType>(initialState)
 
 export function TranslationProvider({ children }: { children: React.ReactNode }) {
-  const [currentLocale, setCurrentLocale] = useState<AvailableLocales>("en")
+  const [locale, setLocale] = useState<AvailableLocales>("en")
   const [translations, setTranslations] = useState<Translations>({ en })
 
-  useEffect(() => {
-    fetch(`./locales/${currentLocale}.json`)
+  async function changeLocale(newLocale: AvailableLocales) {
+    fetch(`./locales/${newLocale}.json`)
       .then(response => response.json())
       .then(json => {
         console.log("Fetched:", json)
         setTranslations(translations => {
           const newTranslations = { ...translations }
-          newTranslations[currentLocale] = json
+          newTranslations[newLocale] = json
           return newTranslations
         })
+        setLocale(newLocale)
       })
-  }, [currentLocale])
+      .catch(reason => console.error("Error fetching translations:", reason))
+  }
 
   useEffect(() => {
     console.log(translations)
   }, [translations])
 
-  return (
-    <TranslationContext.Provider
-      value={{ locale: currentLocale, changeLocale: (locale: AvailableLocales) => setCurrentLocale(locale), translations }}
-    >
-      {children}
-    </TranslationContext.Provider>
-  )
+  return <TranslationContext.Provider value={{ locale, changeLocale, translations }}>{children}</TranslationContext.Provider>
 }
